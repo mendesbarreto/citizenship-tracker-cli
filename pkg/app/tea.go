@@ -192,6 +192,7 @@ func checkForUpdates(resp *model.StatusResponse) {
 		}
 
 		_ = api.SendNotification("Citizenship Tracker", fmt.Sprintf("%s Status Updated", stringsDict[updatedActivity]), stringsDict[updatedStatus])
+		time.Sleep(1 * time.Second)
 	}
 }
 
