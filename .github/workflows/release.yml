@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          cache: true
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          tag_prefix: "v"
+          default_bump: patch
+          release_branches: main
+
+      - name: Get commit info
+        run: |
+          echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+          echo "VERSION=${{ steps.tag_version.outputs.new_tag }}" >> $GITHUB_ENV
+          echo "VERSION_NUM=${{ steps.tag_version.outputs.new_version }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          mkdir -p build/output
+          go build -o build/output/citizenship-tracker-cli \
+            -ldflags="-X 'citizenship-tracker-cli/pkg/version.Version=${VERSION_NUM}' \
+                      -X 'citizenship-tracker-cli/pkg/version.Commit=${COMMIT_SHA}' \
+                      -X 'citizenship-tracker-cli/pkg/version.Date=${BUILD_DATE}'"
+
+      - name: Test Version
+        run: ./build/output/citizenship-tracker-cli --version
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          file: ./build/output/*
+          tag: "${{ steps.tag_version.outputs.new_tag }}"
+          overwrite: true
+          file_glob: true
+          body: "${{ steps.tag_version.outputs.changelog }}"
+
+      - name: Trigger Homebrew Tap Update
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.TAP_REPO_TOKEN }}
+          repository: mendesbarreto/homebrew-citizenship
+          event-type: release-created
