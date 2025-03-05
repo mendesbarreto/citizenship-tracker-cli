@@ -57,10 +57,9 @@ jobs:
           file_glob: true
           body: "${{ steps.tag_version.outputs.changelog }}"
 
-      #TODO: Uncomment when ready
-      # - name: Trigger Homebrew Tap Update
-      #   uses: peter-evans/repository-dispatch@v2
-      #   with:
-      #     token: ${{ secrets.TAP_REPO_TOKEN }}
-      #     repository: mendesbarreto/homebrew-citizenship
-      #     event-type: release-created
+      - name: Trigger Homebrew Tap Update
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.TAP_REPO_TOKEN }}
+          repository: mendesbarreto/homebrew-citizenship
+          event-type: release-created
