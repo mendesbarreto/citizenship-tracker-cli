@@ -85,6 +85,26 @@ func GetUserCredentials() model.Credential {
 	}
 }
 
+func RunHeadless() error {
+	cred := GetUserCredentials()
+	authResponse, err := api.Auth(cred.Uci, cred.Password)
+	if err != nil {
+		return nil
+	}
+
+	authToken := fmt.Sprintf("Bearer %s", authResponse.AuthenticationResult.IdToken)
+	resp, err := api.GetStatus(authToken, cred.ApplicationNumber)
+	if err != nil {
+		return nil
+	}
+
+	// fmt.Printf("The response is: %v\n", resp)
+	checkForUpdates(resp)
+	api.SaveStatusResponse(resp)
+
+	return nil
+}
+
 func InitialTeaModel() tea.Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -184,7 +204,7 @@ func checkForUpdates(resp *model.StatusResponse) {
 			continue
 		}
 
-		fmt.Printf("old: %s | new: %s\n", la.Status, udpateActivities[idx].Status)
+		// fmt.Printf("old: %s | new: %s\n", la.Status, udpateActivities[idx].Status)
 		updatedStatus := udpateActivities[idx].Status
 		updatedActivity := udpateActivities[idx].Activity
 		if la.Status == updatedStatus {

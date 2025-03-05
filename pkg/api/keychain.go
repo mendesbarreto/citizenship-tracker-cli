@@ -51,10 +51,10 @@ func GetFromKeychain() (KeychainItem, error) {
 
 	firstResult := results[0]
 
-	fmt.Printf("[Keychain] Account: %s\n", firstResult.Account)
-	fmt.Printf("[Keychain] Service: %s\n", firstResult.Service)
-	fmt.Printf("[Keychain] Application Number: %s\n", firstResult.Label)
-	fmt.Printf("[Keychain] Password: %s\n", string(firstResult.Data))
+	// fmt.Printf("[Keychain] Account: %s\n", firstResult.Account)
+	// fmt.Printf("[Keychain] Service: %s\n", firstResult.Service)
+	// fmt.Printf("[Keychain] Application Number: %s\n", firstResult.Label)
+	// fmt.Printf("[Keychain] Password: %s\n", string(firstResult.Data))
 
 	return KeychainItem{
 		Account:           firstResult.Account,
